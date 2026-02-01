@@ -4,13 +4,13 @@ DreadMyst Opcode Discovery Tool
 
 This version focuses on FINDING the correct opcodes by:
 1. Filtering out high-frequency spam (opcodes that fire >10 times/sec)
-2. Highlighting RARE events (likely the ones you care about)
+2. Highlighting RARE events
 3. Letting you mark timestamps when you do specific actions
 
 WORKFLOW:
 1. Start capture with this tool
 2. Stand still for 10 seconds (let it learn what's spam)
-3. Click "Mark Action" RIGHT BEFORE you kill a mob / pick up gold / etc
+3. Click "Mark Action" RIGHT BEFORE we kill a mob / pick up gold / etc
 4. Check which opcodes fired right after your mark
 """
 
@@ -472,4 +472,5 @@ class App(tk.Tk):
 
 
 if __name__ == "__main__":
+
     App().mainloop()
