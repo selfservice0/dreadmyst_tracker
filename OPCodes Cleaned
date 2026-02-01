@@ -1,0 +1,178 @@
+# Dreadmyst Server Packets
+# Extracted from Ghidra Decompilation
+
+## Server → Client Packets (GP_Server_*)
+
+### Chat System
+- **GP_Server_ChatMsg** (0x45ccb0) - Chat message from server
+- **GP_Server_ChannelInfo** (0x45b400) - Channel information
+
+### Player System
+- **GP_Server_Player** (0x45bb50) - Player data update
+- **GP_Server_Object** (0x454dc0) - Object spawn/update
+- **GP_Server_PkNotify** (0x45de50) - Player kill notification
+- **GP_Server_InspectReveal** (0x459b80) - Inspect reveal
+
+### Guild System
+- **GP_Server_GuildOnlineStatus** (0x4646b0) - Guild member online status
+- **GP_Server_GuildNotifyRoleChange** (0x464e00) - Guild role change
+- **GP_Server_GuildRoster** (0x466940) - Guild roster
+- **GP_Server_GuildInvite** (0x466e80) - Guild invitation
+- **GP_Server_GuildAddMember** (0x46a960) - Add member to guild
+- **GP_Server_OfferParty** (0x462be0) - Party invitation
+- **GP_Server_SetSubname** (0x466760) - Set player subname/title
+
+### Combat System
+- **GP_Server_OfferDuel** (0x465dd0) - Duel challenge offer
+
+### Spell System
+- **GP_Server_SpellGo** (0x46a130) - Spell cast confirmation
+- **GP_Server_UnitAuras** (0x469650) - Unit aura updates
+
+### Trade System
+- **GP_Server_TradeUpdate** (0x461fa0) - Trade status update
+
+### Other
+- **GP_Server_GossipMenu** (0x460fb0) - NPC dialogue menu
+
+---
+
+## Client → Server Packets (GP_Client_*)
+
+### Authentication
+- **GP_Client_Authenticate** (0x49d5e0) - Login authentication
+
+### Movement
+- **GP_Client_RequestMove** (0x5357a0) - Player movement request
+
+### Chat
+- **GP_Client_ChatMsg** (0x46f660) - Send chat message
+
+### Items & Inventory
+- **GP_Client_UseItem** (0x44e410) - Use item
+- **GP_Client_EquipItem** (0x451330, 0x48bbe0, 0x48d1a0) - Equip item (multiple versions)
+- **GP_Client_MoveInventoryToBank** (0x416490) - Move item to bank
+- **GP_Client_UnBankItem** (0x4161d0) - Withdraw from bank
+
+### Spells
+- **GP_Client_CastSpell** (0x4220b0, 0x422530, 0x4737a0, 0x51e260, 0x535040) - Cast spell (multiple versions)
+
+### Party System
+- **GP_Client_PartyInviteMember** (0x4755d0, 0x489290) - Invite to party
+- **GP_Client_PartyChanges** (0x52b120) - Party member changes
+
+### Guild System
+- **GP_Client_GuildCreate** (0x4737a0) - Create guild
+- **GP_Client_GuildInviteMember** (0x4737a0) - Invite to guild
+- **GP_Client_GuildPromoteMember** (0x487340) - Promote guild member
+- **GP_Client_GuildDemoteMember** (0x487340) - Demote guild member
+- **GP_Client_GuildInviteResponse** (0x458e10) - Respond to guild invite
+- **GP_Client_GuildMotd** (0x487340) - Guild message of the day
+
+### Trade
+- **GP_Client_OpenTradeWith** (0x52aa80) - Open trade window
+
+### Combat
+- **GP_Client_UpdateArenaStatus** (0x458e10) - Update arena status
+- **GP_Client_Repair** (0x458e10) - Repair equipment
+
+### Leveling
+- **GP_Client_LevelUp** (0x53c9d0) - Level up notification
+
+### Moderator Functions (GP_Client_MOD_*)
+- **GP_Client_MOD_WarnPlayer** (0x4737a0) - Warn a player
+- **GP_Client_MOD_MutePlayer** (0x475420) - Mute a player
+- **GP_Client_MOD_KickPlayer** (0x475450) - Kick a player
+- **GP_Client_MOD_BanPlayer** (0x475480) - Ban a player
+
+### Other
+- **GP_Client_ReportPlayer** (0x4737a0) - Report player to moderators
+- **GP_Client_SetIgnorePlayer** (0x4737a0) - Ignore a player
+
+---
+
+## Chat Channels & Message Types
+
+### Channel Opcodes Found:
+- `\x00` - System messages
+- `\x01` - Broadcast/World
+- `\x02` - Party
+- `\x03` - ?
+- `\x04` - Channel-specific
+- `\x05` - ?
+- `\x06` - Regular chat
+- `\t` (0x09) - Command/Slash commands
+- `\x0e` through `\x1f` - Various sub-channels
+
+### Message Type Characters:
+- Numbers: 0, 2, 3, 4
+- Letters: B, E, G, L, M, N, T, V, W, Z
+- Symbols: ;, :, ?, [, \
+
+---
+
+## Packet Structure Analysis (GP_Server_ChatMsg)
+
+From decompiled code at 0x45ccb0:
+
+```
+GP_Server_ChatMsg {
+    vftable_ptr        // Virtual function table pointer
+    channel_id         // Chat channel (byte)
+    flags              // Message flags
+    player_id          // Sender player reference
+    message_text       // Chat message content
+    timestamp          // Message timestamp
+    // ... additional fields
+}
+```
+
+### Channel Handling Logic:
+- `\x06` (0x06) - Regular channel (most common)
+- `\x00` (0x00) - Empty/null channel check
+- `\x04` (0x04) - Special channel
+- `\x01` (0x01) - Another channel type
+- `\x02` (0x02) - Another channel type
+- `\t` (0x09) - Command/special
+
+---
+
+## Notes
+
+1. **Multiple Function Versions**: Many packet types have multiple implementations (e.g., `GP_Client_CastSpell` appears 5+ times), suggesting:
+   - Different spell types
+   - Code refactoring across versions
+   - Specialized handlers for different spell categories
+
+2. **Moderator System**: Dedicated `GP_Client_MOD_*` packet types for GM/moderator actions:
+   - Warn, Mute, Kick, Ban
+   - Report player system
+   - Ignore player system
+
+3. **Complex Systems**: Game has:
+   - Full guild system with roles, rosters, invites
+   - Party system
+   - Trading system
+   - Arena/PvP system
+   - Bank/inventory management
+
+4. **Chat Integration**: Chat is integrated with:
+   - Multiple channels
+   - Guild system
+   - Party system
+   - Moderator tools
+   - Timestamps
+   - Message filtering
+
+---
+
+## Further Analysis Needed
+
+To get complete packet structures, use Ghidra GUI:
+1. Open Ghidra project
+2. Navigate to Symbol Tree → Data Types
+3. Search for `GP_Server_ChatMsg`, `GP_Client_ChatMsg`, etc.
+4. Right-click → View to see full struct definitions
+5. Extract field offsets, types, and sizes
+
+Or run the `extract_chat_info.py` script to extract JSON with detailed information.
